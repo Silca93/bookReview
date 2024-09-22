@@ -6,7 +6,7 @@
       <button class="btn rounded-md mb-4 flex justify-center items-center gap-1"><span class="font-bold text-lg">←</span> Back</button>
     </a>
     <h1 class="sticky top-0 mb-2 text-2xl"><b>{{ $book->title }}</b></h1>
-    <p>{{$book->id}}</p>
+    {{-- <p>{{$book->id}}</p> --}}
 
     <div class="book-info">
       <div class="book-author mb-4 text-lg font-semibold">by <i class="text-gray-400">{{ $book->author }}</i></div>

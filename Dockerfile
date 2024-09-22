@@ -42,11 +42,18 @@ COPY --chown=www-data:www-data . /var/www
 # Copy Nginx config
 COPY nginx.conf /etc/nginx/sites-available/default
 
+# Enable error logging
+RUN mkdir -p /var/log/php \
+    && touch /var/log/php/errors.log \
+    && chown -R www-data:www-data /var/log/php
+
 # Expose port 80
 EXPOSE 80
 
 # Create entrypoint script
 RUN echo '#!/bin/sh' > /entrypoint.sh \
+    && echo 'php artisan config:clear' >> /entrypoint.sh \
+    && echo 'php artisan cache:clear' >> /entrypoint.sh \
     && echo 'php artisan config:cache' >> /entrypoint.sh \
     && echo 'php artisan route:cache' >> /entrypoint.sh \
     && echo 'php-fpm -D' >> /entrypoint.sh \

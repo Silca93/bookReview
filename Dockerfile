@@ -24,8 +24,17 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # Set working directory
 WORKDIR /var/www
 
+# Copy composer.json and composer.lock
+COPY composer.json composer.lock ./
+
+# Install dependencies
+RUN composer install --no-scripts --no-autoloader
+
 # Copy existing application directory contents
 COPY . /var/www
+
+# Generate autoloader
+RUN composer dump-autoload --optimize
 
 # Copy existing application directory permissions
 COPY --chown=www-data:www-data . /var/www
@@ -38,6 +47,8 @@ EXPOSE 80
 
 # Create entrypoint script
 RUN echo '#!/bin/sh' > /entrypoint.sh \
+    && echo 'php artisan config:cache' >> /entrypoint.sh \
+    && echo 'php artisan route:cache' >> /entrypoint.sh \
     && echo 'php-fpm -D' >> /entrypoint.sh \
     && echo 'nginx -g "daemon off;"' >> /entrypoint.sh \
     && chmod +x /entrypoint.sh

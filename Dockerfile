@@ -1,4 +1,4 @@
-# Use an official PHP image with necessary extensions
+# Use an official PHP 8.3 image with necessary extensions
 FROM php:8.3-fpm
 
 # Set working directory
@@ -16,10 +16,12 @@ RUN apt-get update && apt-get install -y \
     vim \
     unzip \
     git \
-    curl
+    curl \
+    libonig-dev  # Add this line to install Oniguruma
 
 # Install PHP extensions
-RUN docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install pdo pdo_mysql mbstring exif pcntl bcmath gd
 
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer

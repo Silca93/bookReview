@@ -1,23 +1,18 @@
-# Use an official PHP 8.3 image with necessary extensions
+# Use an official PHP 8.3 image with FPM
 FROM php:8.3-fpm
-
-# Set working directory
-WORKDIR /var/www
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
+    nginx \
     build-essential \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
-    locales \
     zip \
-    jpegoptim optipng pngquant gifsicle \
-    vim \
     unzip \
     git \
     curl \
-    libonig-dev  # Add this line to install Oniguruma
+    libonig-dev
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -26,12 +21,26 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
 # Install Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
+# Set working directory
+WORKDIR /var/www
+
 # Copy existing application directory contents
 COPY . /var/www
 
 # Copy existing application directory permissions
 COPY --chown=www-data:www-data . /var/www
 
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
-CMD ["php-fpm"]
+# Copy Nginx config
+COPY nginx.conf /etc/nginx/sites-available/default
+
+# Expose port 80
+EXPOSE 80
+
+# Create entrypoint script
+RUN echo '#!/bin/sh' > /entrypoint.sh \
+    && echo 'php-fpm -D' >> /entrypoint.sh \
+    && echo 'nginx -g "daemon off;"' >> /entrypoint.sh \
+    && chmod +x /entrypoint.sh
+
+# Set the entrypoint
+ENTRYPOINT ["/entrypoint.sh"]

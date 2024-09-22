@@ -15,3 +15,26 @@ services:
     restart: always
     ports:
       - 8080:8080
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laravel_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    expose:
+      - "9000"  # This makes port 9000 available to other services in the Docker network
+
+  web:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"  # Expose port 80 for HTTP traffic
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf  # Point to your Nginx config
+    depends_on:
+      - app  # Ensure Nginx waits for the app to be ready    

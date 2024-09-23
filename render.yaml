@@ -2,23 +2,48 @@ services:
   - type: web
     name: laravel-app
     env: docker
-    buildCommand: docker build -t laravel-app .
-    startCommand: docker run --rm -p $PORT:80 laravel-app
+    buildCommand: |
+      docker build -t laravel-app .
+      docker run --rm \
+        -e DB_CONNECTION=pgsql \
+        -e DB_HOST=dpg-cro42de8ii6s73f2in7g-a.frankfurt-postgres.render.com \
+        -e DB_PORT=5432 \
+        -e DB_DATABASE=bookreviewdb_cj97 \
+        -e DB_USERNAME=bookreviewdb_cj97_user \
+        -e DB_PASSWORD=lfoeoGZ9RitMeuzqyTyanWTXRSfs6U8T \
+        laravel-app php artisan migrate --force
+    startCommand: |
+      docker run --rm -p $PORT:80 \
+        -e APP_KEY=${APP_KEY} \
+        -e APP_ENV=${APP_ENV} \
+        -e APP_DEBUG=${APP_DEBUG} \
+        -e APP_URL=${APP_URL} \
+        -e DB_CONNECTION=${DB_CONNECTION} \
+        -e DB_HOST=${DB_HOST} \
+        -e DB_PORT=${DB_PORT} \
+        -e DB_DATABASE=${DB_DATABASE} \
+        -e DB_USERNAME=${DB_USERNAME} \
+        -e DB_PASSWORD=${DB_PASSWORD} \
+        laravel-app /bin/sh -c "php-fpm & nginx -g 'daemon off;'"
     envVars:
       - key: APP_KEY
-        generateValue: true
+        value: base64:v9j8Ln3gRpRF/7rZqzOq2iWY4rApJryzEoSLYvDF4Rk=
       - key: APP_ENV
         value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        value: https://bookreview-app.onrender.com
       - key: DB_CONNECTION
         value: pgsql
       - key: DB_HOST
-        sync: false
+        value: dpg-cro42de8ii6s73f2in7g-a.frankfurt-postgres.render.com
       - key: DB_PORT
         value: 5432
       - key: DB_DATABASE
-        sync: false
+        value: bookreviewdb_cj97
       - key: DB_USERNAME
-        sync: false
+        value: bookreviewdb_cj97_user
       - key: DB_PASSWORD
-        sync: false
+        value: lfoeoGZ9RitMeuzqyTyanWTXRSfs6U8T
     healthCheckPath: /
